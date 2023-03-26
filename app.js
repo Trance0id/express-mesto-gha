@@ -23,9 +23,12 @@ app.use((req, res, next) => {
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-app.use('/', (req, res) => {
-  process.on('uncaughtException', (err) => {
-    res.status(STATUS_CODES.ERR_DEFAULT).send({ message: `На сервере произошла ошибка: ${err.name}` });
+app.use('/*+', (req, res) => {
+  res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
+});
+app.use('/*+', (req, res) => {
+  process.on('uncaughtException', () => {
+    res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
   });
 });
 
