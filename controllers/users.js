@@ -1,15 +1,17 @@
 const User = require('../models/user');
 
+const STATUS_CODES = require('../utils/constants');
+
 const onNotFound = (res) => {
-  res.status(404).send({ message: 'Запрашиваемый пользователь не найден.' });
+  res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден.' });
 };
 
 const onValidationError = (res) => {
-  res.status(400).send({ message: 'Переданы некорректные данные пользователя.' });
+  res.status(STATUS_CODES.ERR_INCORRECT).send({ message: 'Переданы некорректные данные пользователя.' });
 };
 
 const onStandartError = (res) => {
-  res.status(500).send({ message: 'Ошибка сервера.' });
+  res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
 };
 
 const errorHandler = (err, res) => {
@@ -37,9 +39,6 @@ const getUsers = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(() => {
-      throw new Error('Такой пользователь не найден!');
-    })
     .then((user) => {
       res.status(200).send(user);
     })
@@ -50,7 +49,9 @@ const getUser = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  User.create(
+    { name, about, avatar },
+  )
     .then((users) => {
       res.status(200).send(users);
     })
@@ -60,7 +61,11 @@ const createUser = (req, res) => {
 };
 
 const modifyUser = (req, res) => {
-  User.findByIdAndUpdate(req.user._id, { ...req.body })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { ...req.body },
+    { new: true },
+  )
     .then((users) => {
       res.status(200).send(users);
     })
@@ -70,9 +75,13 @@ const modifyUser = (req, res) => {
 };
 
 const changeAvatar = (req, res) => {
-  User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar })
-    .then((users) => {
-      res.status(200).send(users);
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar: req.body.avatar },
+    { new: true },
+  )
+    .then((user) => {
+      res.status(200).send(user);
     })
     .catch((err) => {
       errorHandler(err, res);

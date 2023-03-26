@@ -5,6 +5,8 @@ const process = require('process');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 
+const STATUS_CODES = require('./utils/constants');
+
 const { PORT = 3000 } = process.env;
 
 const app = express();
@@ -23,7 +25,7 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 app.use('/', (req, res, next) => {
   process.on('uncaughtException', (err) => {
-    res.status(500).send({ message: `Неизвестная ошибка сервера: ${err.name}` });
+    res.status(STATUS_CODES.ERR_DEFAULT).send({ message: `На сервере произошла ошибка: ${err.name}` });
   });
 
   next();

@@ -1,16 +1,18 @@
 // const mongoose = require('mongoose');
 const Card = require('../models/card');
 
+const STATUS_CODES = require('../utils/constants');
+
 const onNotFound = (res) => {
-  res.status(404).send({ message: 'Запрашиваемая карточка не найдена.' });
+  res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Запрашиваемая карточка не найдена.' });
 };
 
 const onValidationError = (res) => {
-  res.status(400).send({ message: 'Переданы некорректные данные при создании карточки.' });
+  res.status(STATUS_CODES.ERR_INCORRECT).send({ message: 'Переданы некорректные данные при создании карточки.' });
 };
 
 const onStandartError = (res) => {
-  res.status(500).send({ message: 'Ошибка сервера.' });
+  res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
 };
 
 const errorHandler = (err, res) => {
@@ -27,7 +29,6 @@ const errorHandler = (err, res) => {
 
 const getCards = (req, res) => {
   Card.find({})
-    .orFail(() => onNotFound(res))
     .populate(['owner', 'likes'])
     .then((cards) => {
       res.status(200).send(cards);
@@ -44,6 +45,7 @@ const createCard = (req, res) => {
     { name, link, owner: ownerId },
     { new: true },
   )
+    .populate(['owner', 'likes'])
     .then((card) => {
       res.status(200).send(card);
     })
@@ -55,10 +57,8 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndDelete(cardId)
-    .orFail(() => onNotFound(res))
-    .populate(['owner', 'likes'])
-    .then((card) => {
-      res.status(200).send(card);
+    .then(() => {
+      res.status(200).send({ message: 'Карточка удалена' });
     })
     .catch((err) => {
       errorHandler(err, res);
@@ -86,7 +86,6 @@ const unLikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => onNotFound(res))
     .populate(['owner', 'likes'])
     .then((card) => {
       res.status(200).send(card);
