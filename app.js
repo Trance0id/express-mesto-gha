@@ -23,13 +23,13 @@ app.use((req, res, next) => {
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-app.all('/*+', (req, res) => {
+app.use('/', (err, req, res, next) => {
   res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Сервер не может обработать запрос.' });
-});
-app.use('/*+', (req, res) => {
   process.on('uncaughtException', () => {
     res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
   });
+
+  next();
 });
 
 mongoose
