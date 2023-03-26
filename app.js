@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-app.use('/', (req, res) => {
+app.use('/*', (req, res) => {
   process.on('uncaughtException', (err) => {
     res.status(STATUS_CODES.ERR_DEFAULT).send({ message: `На сервере произошла ошибка: ${err.name}` });
   });

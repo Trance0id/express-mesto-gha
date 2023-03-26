@@ -50,6 +50,9 @@ const getUsers = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(() => {
+      throw new Error('Search returned null');
+    })
     .then((user) => {
       res.status(200).send(user);
     })

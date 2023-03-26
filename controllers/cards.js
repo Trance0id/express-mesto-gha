@@ -23,6 +23,14 @@ const errorHandler = (err, res) => {
     onValidationError(res);
     return;
   }
+  if (err.name === 'TypeError') {
+    onValidationError(res);
+    return;
+  }
+  if (err.message === 'Search returned null') {
+    onNotFound(res);
+    return;
+  }
   onStandartError(res);
 };
 
@@ -66,6 +74,9 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => {
+      throw new Error('Search returned null');
+    })
     .populate(['owner', 'likes'])
     .then((card) => {
       res.status(200).send(card);
@@ -81,6 +92,9 @@ const unLikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => {
+      throw new Error('Search returned null');
+    })
     .populate(['owner', 'likes'])
     .then((card) => {
       res.status(200).send(card);
