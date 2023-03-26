@@ -29,4 +29,22 @@ const createUser = (req, res) => {
     .catch((err) => { console.log(`error in createUser: ${err}`); });
 };
 
-module.exports = { getUsers, getUser, createUser };
+const modifyUser = (req, res) => {
+  User.findByIdAndUpdate(req.user._id, { ...req.body })
+    .then((users) => {
+      res.status(200).send(users);
+    })
+    .catch((err) => { console.log(`error in createUser: ${err}`); });
+};
+
+const changeAvatar = (req, res) => {
+  User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar })
+    .then((users) => {
+      res.status(200).send(users);
+    })
+    .catch((err) => { console.log(`error in createUser: ${err}`); });
+};
+
+module.exports = {
+  getUsers, getUser, createUser, modifyUser, changeAvatar,
+};

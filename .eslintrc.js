@@ -11,6 +11,6 @@ module.exports = {
   },
   plugins: ['react'],
   rules: {
-    'no-underscore-dangle': 'warn',
+    'no-underscore-dangle': 'off',
   },
 };
