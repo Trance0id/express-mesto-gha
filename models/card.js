@@ -8,13 +8,12 @@ const cardSchema = mongoose.Schema({
     maxLength: 30,
   },
   link: {
-    required: true,
     type: String,
+    required: true,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    required: true,
   },
   createdAt: {
     type: String,

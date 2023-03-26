@@ -50,9 +50,6 @@ const getUsers = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(() => {
-      throw new Error('Search returned null');
-    })
     .then((user) => {
       res.status(200).send(user);
     })
@@ -63,9 +60,7 @@ const getUser = (req, res) => {
 
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create(
-    { name, about, avatar },
-  )
+  User.create({ name, about, avatar })
     .then((users) => {
       res.status(200).send(users);
     })
@@ -78,7 +73,10 @@ const modifyUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     req.body,
-    { new: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((users) => {
       res.status(200).send(users);
@@ -92,7 +90,10 @@ const changeAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar: req.body.avatar },
-    { new: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => {
       res.status(200).send(user);
