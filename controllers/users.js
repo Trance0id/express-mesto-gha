@@ -1,11 +1,37 @@
 const User = require('../models/user');
 
+const onNotFound = (res) => {
+  res.status(404).send({ message: 'Запрашиваемый пользователь не найден.' });
+};
+
+const onValidationError = (res) => {
+  res.status(400).send({ message: 'Переданы некорректные данные пользователя.' });
+};
+
+const onStandartError = (res) => {
+  res.status(500).send({ message: 'Ошибка сервера.' });
+};
+
+const errorHandler = (err, res) => {
+  if (err.name === 'CastError') {
+    onNotFound(res);
+    return;
+  }
+  if (err.name === 'ValidationError') {
+    onValidationError(res);
+    return;
+  }
+  onStandartError(res);
+};
+
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch((err) => { console.log(`error in getUsers: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const getUser = (req, res) => {
@@ -17,7 +43,9 @@ const getUser = (req, res) => {
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch((err) => { console.log(`error in getUser: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const createUser = (req, res) => {
@@ -26,7 +54,9 @@ const createUser = (req, res) => {
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch((err) => { console.log(`error in createUser: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const modifyUser = (req, res) => {
@@ -34,7 +64,9 @@ const modifyUser = (req, res) => {
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch((err) => { console.log(`error in createUser: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const changeAvatar = (req, res) => {
@@ -42,7 +74,9 @@ const changeAvatar = (req, res) => {
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch((err) => { console.log(`error in createUser: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 module.exports = {

@@ -1,12 +1,40 @@
+// const mongoose = require('mongoose');
 const Card = require('../models/card');
+
+const onNotFound = (res) => {
+  res.status(404).send({ message: 'Запрашиваемая карточка не найдена.' });
+};
+
+const onValidationError = (res) => {
+  res.status(400).send({ message: 'Переданы некорректные данные при создании карточки.' });
+};
+
+const onStandartError = (res) => {
+  res.status(500).send({ message: 'Ошибка сервера.' });
+};
+
+const errorHandler = (err, res) => {
+  if (err.name === 'CastError') {
+    onNotFound(res);
+    return;
+  }
+  if (err.name === 'ValidationError') {
+    onValidationError(res);
+    return;
+  }
+  onStandartError(res);
+};
 
 const getCards = (req, res) => {
   Card.find({})
+    .orFail(() => onNotFound(res))
     .populate(['owner', 'likes'])
     .then((cards) => {
       res.status(200).send(cards);
     })
-    .catch((err) => { console.log(`error in getCards: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const createCard = (req, res) => {
@@ -16,24 +44,25 @@ const createCard = (req, res) => {
     { name, link, owner: ownerId },
     { new: true },
   )
-    .populate(['owner', 'likes'])
     .then((card) => {
       res.status(200).send(card);
     })
-    .catch((err) => { console.log(`error in createCard: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndDelete(cardId)
-    .orFail(() => {
-      throw new Error('Такая карточка не найдена!');
-    })
+    .orFail(() => onNotFound(res))
     .populate(['owner', 'likes'])
     .then((card) => {
       res.status(200).send(card);
     })
-    .catch((err) => { console.log(`error in deleteCard: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const likeCard = (req, res) => {
@@ -43,13 +72,12 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .populate(['owner', 'likes'])
-    .orFail(() => {
-      throw new Error('Такая карточка не найдена!');
-    })
     .then((card) => {
       res.status(200).send(card);
     })
-    .catch((err) => { console.log(`error in likeCard: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 const unLikeCard = (req, res) => {
@@ -58,14 +86,14 @@ const unLikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => onNotFound(res))
     .populate(['owner', 'likes'])
-    .orFail(() => {
-      throw new Error('Такая карточка не найдена!');
-    })
     .then((card) => {
       res.status(200).send(card);
     })
-    .catch((err) => { console.log(`error in unlikeCard: ${err}`); });
+    .catch((err) => {
+      errorHandler(err, res);
+    });
 };
 
 module.exports = {
