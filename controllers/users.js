@@ -23,11 +23,22 @@ const errorHandler = (err, res) => {
     onValidationError(res);
     return;
   }
+  if (err.name === 'TypeError') {
+    onValidationError(res);
+    return;
+  }
+  if (err.message === 'Search returned null') {
+    onNotFound(res);
+    return;
+  }
   onStandartError(res);
 };
 
 const getUsers = (req, res) => {
   User.find({})
+    .orFail(() => {
+      throw new Error('Search returned null');
+    })
     .then((users) => {
       res.status(200).send(users);
     })
@@ -39,6 +50,9 @@ const getUsers = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(() => {
+      throw new Error('Search returned null');
+    })
     .then((user) => {
       res.status(200).send(user);
     })
@@ -63,7 +77,7 @@ const createUser = (req, res) => {
 const modifyUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
-    { ...req.body },
+    req.body,
     { new: true },
   )
     .then((users) => {

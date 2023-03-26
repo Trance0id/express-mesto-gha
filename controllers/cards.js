@@ -1,4 +1,3 @@
-// const mongoose = require('mongoose');
 const Card = require('../models/card');
 
 const STATUS_CODES = require('../utils/constants');
