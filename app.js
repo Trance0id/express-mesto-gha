@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 app.all('/*+', (req, res) => {
-  res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'Сервер не может обработать запрос.' });
+  res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Сервер не может обработать запрос.' });
 });
 app.use('/*+', (req, res) => {
   process.on('uncaughtException', () => {

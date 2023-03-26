@@ -60,6 +60,9 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndDelete(cardId)
+    .orFail(() => {
+      throw new Error('Search returned null');
+    })
     .then(() => {
       res.status(200).send({ message: 'Карточка удалена' });
     })
