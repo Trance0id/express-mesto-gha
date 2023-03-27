@@ -4,12 +4,12 @@ const cardSchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minLength: 2,
-    maxLength: 30,
+    minLength: [2, 'Must be at least 2 characters'],
+    maxLength: [30, 'Must be less than 30 characters'],
   },
   link: {
     type: String,
-    required: true,
+    required: [true, 'this field is required'],
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

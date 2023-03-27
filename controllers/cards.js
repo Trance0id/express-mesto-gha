@@ -20,7 +20,7 @@ const errorHandler = (err, res) => {
     return;
   }
   if (err.name === 'ValidationError') {
-    onValidationError(res);
+    onValidationError(res, err);
     return;
   }
   if (err.name === 'TypeError') {
