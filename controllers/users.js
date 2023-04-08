@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
 const STATUS_CODES = require('../utils/constants');
@@ -62,8 +63,14 @@ const getUser = (req, res) => {
 };
 
 const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((users) => {
       res.status(200).send(users);
     })
@@ -73,14 +80,10 @@ const createUser = (req, res) => {
 };
 
 const modifyUser = (req, res) => {
-  User.findByIdAndUpdate(
-    req.user._id,
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    },
-  )
+  User.findByIdAndUpdate(req.user._id, req.body, {
+    new: true,
+    runValidators: true,
+  })
     .then((users) => {
       res.status(200).send(users);
     })
@@ -107,5 +110,9 @@ const changeAvatar = (req, res) => {
 };
 
 module.exports = {
-  getUsers, getUser, createUser, modifyUser, changeAvatar,
+  getUsers,
+  getUser,
+  createUser,
+  modifyUser,
+  changeAvatar,
 };
