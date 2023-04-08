@@ -1,4 +1,5 @@
-const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 const STATUS_CODES = require('../utils/constants');
@@ -33,6 +34,21 @@ const errorHandler = (err, res) => {
     return;
   }
   onStandartError(res);
+};
+
+const login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true }).end();
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .clearCookie('jwt')
+        .send({ message: err.message });
+    });
 };
 
 const getUsers = (req, res) => {
@@ -75,6 +91,7 @@ const createUser = (req, res) => {
       res.status(200).send(users);
     })
     .catch((err) => {
+      console.log(err);
       errorHandler(err, res);
     });
 };
@@ -110,6 +127,7 @@ const changeAvatar = (req, res) => {
 };
 
 module.exports = {
+  login,
   getUsers,
   getUser,
   createUser,
