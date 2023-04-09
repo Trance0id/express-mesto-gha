@@ -65,7 +65,7 @@ const getUsers = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user._id;
   User.findById(userId)
     .orFail(() => {
       throw new Error('Search returned null');
@@ -91,7 +91,7 @@ const createUser = (req, res) => {
       res.status(200).send(users);
     })
     .catch((err) => {
-      console.log(err);
+      // console.log(err);
       errorHandler(err, res);
     });
 };
