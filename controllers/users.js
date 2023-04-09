@@ -1,42 +1,12 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const NotFoundError = require('../utils/errors/NotFoundError');
+// const AuthError = require('../utils/errors/AuthError');
+const IncorrectError = require('../utils/errors/IncorrectError');
+// const DatabaseError = require('../utils/errors/DatabaseError');
 
-const STATUS_CODES = require('../utils/constants');
-
-const onNotFound = (res) => {
-  res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден.' });
-};
-
-const onValidationError = (res) => {
-  res.status(STATUS_CODES.ERR_INCORRECT).send({ message: 'Переданы некорректные данные пользователя.' });
-};
-
-const onStandartError = (res) => {
-  res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
-};
-
-const errorHandler = (err, res) => {
-  if (err.name === 'CastError') {
-    onNotFound(res);
-    return;
-  }
-  if (err.name === 'ValidationError') {
-    onValidationError(res);
-    return;
-  }
-  if (err.name === 'TypeError') {
-    onValidationError(res);
-    return;
-  }
-  if (err.message === 'Search returned null') {
-    onNotFound(res);
-    return;
-  }
-  onStandartError(res);
-};
-
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -44,41 +14,35 @@ const login = (req, res) => {
       res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true }).end();
     })
     .catch((err) => {
-      res
-        .clearCookie('jwt')
-        .status(401)
-        .send({ message: err.message });
+      res.clearCookie('jwt');
+      next(err);
     });
 };
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .orFail(() => {
-      throw new Error('Search returned null');
+      throw new NotFoundError('Пользователи не найдёны');
     })
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch(next);
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
     .orFail(() => {
-      throw new Error('Search returned null');
+      throw new NotFoundError('Пользователь не найдён');
     })
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch(next);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -90,26 +54,24 @@ const createUser = (req, res) => {
     .then((users) => {
       res.status(200).send(users);
     })
-    .catch((err) => {
-      // console.log(err);
-      errorHandler(err, res);
-    });
+    .catch(next);
 };
 
-const modifyUser = (req, res) => {
+const modifyUser = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, req.body, {
     new: true,
     runValidators: true,
   })
-    .then((users) => {
-      res.status(200).send(users);
+    // .orFail(() => {
+    //   throw new NotFoundError('Пользователь не найдён');
+    // })
+    .then((user) => {
+      res.status(200).send(user);
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => (err.name === 'ValidationError' ? next(new IncorrectError('Введены неверные данные')) : next(new NotFoundError('Пользователь не найден'))));
 };
 
-const changeAvatar = (req, res) => {
+const changeAvatar = (req, res, next) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar: req.body.avatar },
@@ -121,9 +83,9 @@ const changeAvatar = (req, res) => {
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch((err) => {
-      errorHandler(err, res);
-    });
+    .catch((err) => (err.name === 'CastError'
+      ? next(new IncorrectError('Введены неверные данные'))
+      : next(new NotFoundError('Пользователь не найден'))));
 };
 
 module.exports = {

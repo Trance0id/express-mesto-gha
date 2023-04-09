@@ -1,3 +1,0 @@
-module.exports = {
-  ERR_INCORRECT: 400, ERR_AUTH: 401, ERR_NOT_FOUND: 404, ERR_DEFAULT: 500,
-};
