@@ -72,7 +72,6 @@ const deleteCard = (req, res) => {
       throw new Error('Search returned null');
     })
     .then((card) => {
-      console.log(card.owner.toString(), req.user._id);
       if (card.owner.toString() === req.user._id) {
         return Card.deleteOne({ _id: cardId });
       }
@@ -80,7 +79,6 @@ const deleteCard = (req, res) => {
     })
     .then(() => res.status(200).send({ message: 'Карточка удалена' }))
     .catch((err) => {
-      console.log(err.message);
       errorHandler(err, res);
     });
 };

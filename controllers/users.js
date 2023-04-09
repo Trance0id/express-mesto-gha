@@ -45,8 +45,8 @@ const login = (req, res) => {
     })
     .catch((err) => {
       res
-        .status(401)
         .clearCookie('jwt')
+        .status(401)
         .send({ message: err.message });
     });
 };
