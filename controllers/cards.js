@@ -36,7 +36,7 @@ const deleteCard = (req, res, next) => {
       throw new AuthError('Отказано в доступе');
     })
     .then(() => res.status(200).send({ message: 'Карточка удалена' }))
-    .catch((err) => (err.name === 'CastError' ? next(new IncorrectError('Некорректный Id карточки')) : next(new NotFoundError('Карточка не найдена'))));
+    .catch(next);
 };
 
 const likeCard = (req, res, next) => {

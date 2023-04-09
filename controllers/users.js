@@ -32,6 +32,7 @@ const getUsers = (req, res, next) => {
 
 const getUser = (req, res, next) => {
   const userId = req.user._id;
+  console.log(userId);
   User.findById(userId)
     .orFail(() => {
       throw new NotFoundError('Пользователь не найдён');
@@ -46,6 +47,7 @@ const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({
@@ -62,13 +64,12 @@ const modifyUser = (req, res, next) => {
     new: true,
     runValidators: true,
   })
-    // .orFail(() => {
-    //   throw new NotFoundError('Пользователь не найдён');
-    // })
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch((err) => (err.name === 'ValidationError' ? next(new IncorrectError('Введены неверные данные')) : next(new NotFoundError('Пользователь не найден'))));
+    .catch((err) => (err.name === 'ValidationError'
+      ? next(new IncorrectError('Введены неверные данные'))
+      : next(new NotFoundError('Пользователь не найден'))));
 };
 
 const changeAvatar = (req, res, next) => {

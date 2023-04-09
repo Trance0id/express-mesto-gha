@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const process = require('process');
+const { errors } = require('celebrate');
+
 const auth = require('./middlewares/auth');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
@@ -24,6 +26,7 @@ app.use(auth);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
+app.use(errors());
 app.use(errorHandler);
 
 // app.use('/', (req, res) => {
