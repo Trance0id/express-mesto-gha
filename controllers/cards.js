@@ -2,6 +2,10 @@ const Card = require('../models/card');
 
 const STATUS_CODES = require('../utils/constants');
 
+const onAccessError = (res) => {
+  res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'У Вас не прав для удаления этой карточки' });
+};
+
 const onNotFound = (res) => {
   res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Запрашиваемая карточка не найдена.' });
 };
@@ -15,6 +19,10 @@ const onStandartError = (res) => {
 };
 
 const errorHandler = (err, res) => {
+  if (err.message === 'Access permitted') {
+    onAccessError(res);
+    return;
+  }
   if (err.name === 'CastError') {
     onNotFound(res);
     return;
@@ -59,14 +67,20 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
-  Card.findByIdAndDelete(cardId)
+  Card.findById(cardId)
     .orFail(() => {
       throw new Error('Search returned null');
     })
-    .then(() => {
-      res.status(200).send({ message: 'Карточка удалена' });
+    .then((card) => {
+      console.log(card.owner.toString(), req.user._id);
+      if (card.owner.toString() === req.user._id) {
+        return Card.deleteOne({ _id: cardId });
+      }
+      throw new Error('Access permitted');
     })
+    .then(() => res.status(200).send({ message: 'Карточка удалена' }))
     .catch((err) => {
+      console.log(err.message);
       errorHandler(err, res);
     });
 };
