@@ -5,14 +5,14 @@ module.exports = (req, res, next) => {
   const token = req.cookies.jwt;
 
   if (!token) {
-    return new AuthError('Токен не обнаружен');
+    next(new AuthError('Ошибка авторизации'));
   }
 
   let payload;
   try {
     payload = jwt.verify(token, 'secret-key');
   } catch (err) {
-    next(new AuthError('Ошибка проверки токена'));
+    next(new AuthError('Ошибка авторизации'));
   }
 
   req.user = payload;
