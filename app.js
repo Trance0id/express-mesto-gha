@@ -12,6 +12,7 @@ const { login, createUser } = require('./controllers/users');
 
 const errorHandler = require('./middlewares/errorHandler');
 const { linkPattern } = require('./utils/constants');
+const NotFoundError = require('./utils/errors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 
@@ -41,23 +42,14 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 app.use('/:anything', (req, res, next) => {
   const { anything } = req.params;
-  next(anything);
+  next(new NotFoundError(`Обращение к несуществующемму эндпоинту ${anything}`));
 });
 
 app.use(errors());
 app.use(errorHandler);
 
-// app.use('/', (req, res) => {
-//   res.status(STATUS_CODES.ERR_NOT_FOUND).send({ message: 'Сервер не может обработать запрос.' });
-//   process.on('uncaughtException', () => {
-//     res.status(STATUS_CODES.ERR_DEFAULT).send({ message: 'На сервере произошла ошибка.' });
-//   });
-// });
-
 mongoose
   .connect('mongodb://127.0.0.1:27017/mestodb')
   .then(() => {
-    app.listen(PORT, () => {
-      // console.log('app started')
-    });
+    app.listen(PORT);
   });
