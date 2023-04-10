@@ -8,10 +8,10 @@ const IncorrectError = require('../utils/errors/IncorrectError');
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
-      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true }).end();
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true }).send({ message: 'Вы успешно авторизовались' });
     })
     .catch((err) => {
       res.clearCookie('jwt');
@@ -32,7 +32,6 @@ const getUsers = (req, res, next) => {
 
 const getUser = (req, res, next) => {
   const userId = req.params.userId || req.user._id;
-  // console.log(userId);
   User.findById(userId)
     .orFail(() => {
       throw new NotFoundError('Пользователь не найдён');
@@ -54,7 +53,8 @@ const createUser = (req, res, next) => {
       name, about, avatar, email, password: hash,
     }))
     .then((user) => {
-      res.status(200).send(user);
+      User.findById(user._id)
+        .then((userFound) => res.status(200).send(userFound));
     })
     .catch(next);
 };

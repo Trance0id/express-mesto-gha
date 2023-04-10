@@ -1,8 +1,6 @@
 const Card = require('../models/card');
 const NotFoundError = require('../utils/errors/NotFoundError');
-const AuthError = require('../utils/errors/AuthError');
-const IncorrectError = require('../utils/errors/IncorrectError');
-// const DatabaseError = require('../utils/errors/DatabaseError');
+const ForbiddenError = require('../utils/errors/ForbiddenError');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -20,9 +18,6 @@ const createCard = (req, res, next) => {
     .then((card) => {
       res.status(200).send(card);
     })
-    .orFail(() => {
-      throw new IncorrectError('Введены неверные данные');
-    })
     .catch(next);
 };
 
@@ -33,7 +28,7 @@ const deleteCard = (req, res, next) => {
       if (card.owner.toString() === req.user._id) {
         return Card.deleteOne({ _id: cardId });
       }
-      throw new AuthError('Отказано в доступе');
+      throw new ForbiddenError('Отказано в доступе');
     })
     .then(() => res.status(200).send({ message: 'Карточка удалена' }))
     .catch(next);

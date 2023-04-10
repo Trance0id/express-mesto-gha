@@ -39,6 +39,10 @@ app.post('/signup', celebrate({
 app.use(auth);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+app.use('/:anything', (req, res, next) => {
+  const { anything } = req.params;
+  next(anything);
+});
 
 app.use(errors());
 app.use(errorHandler);
