@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const process = require('process');
-const { errors } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 
 const auth = require('./middlewares/auth');
 const usersRouter = require('./routes/users');
@@ -14,13 +14,28 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const { PORT = 3000 } = process.env;
 
+const avatarPattern = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
+
 const app = express();
 
 app.use(cookieParser());
 app.use(bodyParser.json());
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(2).max(30).required(),
+  }),
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(2).max(30).required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(avatarPattern),
+  }),
+}), createUser);
 
 app.use(auth);
 app.use('/users', usersRouter);
