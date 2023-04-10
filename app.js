@@ -11,10 +11,9 @@ const cardsRouter = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 
 const errorHandler = require('./middlewares/errorHandler');
+const { linkPattern } = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
-
-const avatarPattern = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/;
 
 const app = express();
 
@@ -33,7 +32,7 @@ app.post('/signup', celebrate({
     password: Joi.string().min(2).max(30).required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(avatarPattern),
+    avatar: Joi.string().pattern(linkPattern),
   }),
 }), createUser);
 

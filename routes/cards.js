@@ -1,6 +1,9 @@
 const { celebrate, Joi } = require('celebrate');
 
 const cardsRouter = require('express').Router();
+
+const { linkPattern } = require('../utils/constants');
+
 const {
   getCards,
   createCard,
@@ -13,7 +16,7 @@ cardsRouter.get('/', getCards);
 cardsRouter.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
-    link: Joi.string().min(2).max(30),
+    link: Joi.string().pattern(linkPattern),
   }),
 }), createCard);
 cardsRouter.delete('/:cardId', celebrate({

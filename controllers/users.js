@@ -31,8 +31,8 @@ const getUsers = (req, res, next) => {
 };
 
 const getUser = (req, res, next) => {
-  const userId = req.user._id;
-  console.log(userId);
+  const userId = req.params.userId || req.user._id;
+  // console.log(userId);
   User.findById(userId)
     .orFail(() => {
       throw new NotFoundError('Пользователь не найдён');
@@ -53,8 +53,8 @@ const createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((users) => {
-      res.status(200).send(users);
+    .then((user) => {
+      res.status(200).send(user);
     })
     .catch(next);
 };
