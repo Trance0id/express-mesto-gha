@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const NotFoundError = require('../utils/errors/NotFoundError');
 const IncorrectError = require('../utils/errors/IncorrectError');
+const ConflictError = require('../utils/errors/ConflictError');
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
@@ -23,7 +24,7 @@ const getUsers = (req, res, next) => {
       throw new NotFoundError('Пользователи не найдёны');
     })
     .then((users) => {
-      res.status(200).send(users);
+      res.send(users);
     })
     .catch(next);
 };
@@ -35,7 +36,7 @@ const getUser = (req, res, next) => {
       throw new NotFoundError('Пользователь не найдён');
     })
     .then((user) => {
-      res.status(200).send(user);
+      res.send(user);
     })
     .catch(next);
 };
@@ -52,9 +53,19 @@ const createUser = (req, res, next) => {
     }))
     .then((user) => {
       User.findById(user._id)
-        .then((userFound) => res.status(200).send(userFound));
+        .then((userFound) => {
+          res.send(userFound);
+        });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует'));
+      }
+      if (err.name === 'ValidationError') {
+        next(new IncorrectError('Введены неверные данные'));
+      }
+      next(err);
+    });
 };
 
 const modifyUser = (req, res, next) => {
@@ -63,11 +74,14 @@ const modifyUser = (req, res, next) => {
     runValidators: true,
   })
     .then((user) => {
-      res.status(200).send(user);
+      res.send(user);
     })
-    .catch((err) => (err.name === 'ValidationError'
-      ? next(new IncorrectError('Введены неверные данные'))
-      : next(new NotFoundError('Пользователь не найден'))));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new IncorrectError('Введены неверные данные'));
+      }
+      next(err);
+    });
 };
 
 const changeAvatar = (req, res, next) => {
@@ -80,11 +94,14 @@ const changeAvatar = (req, res, next) => {
     },
   )
     .then((user) => {
-      res.status(200).send(user);
+      res.send(user);
     })
-    .catch((err) => (err.name === 'CastError'
-      ? next(new IncorrectError('Введены неверные данные'))
-      : next(new NotFoundError('Пользователь не найден'))));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new IncorrectError('Введены неверные данные'));
+      }
+      next(err);
+    });
 };
 
 module.exports = {

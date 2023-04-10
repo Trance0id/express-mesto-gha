@@ -1,12 +1,12 @@
 const Card = require('../models/card');
 const NotFoundError = require('../utils/errors/NotFoundError');
 const ForbiddenError = require('../utils/errors/ForbiddenError');
+const IncorrectError = require('../utils/errors/IncorrectError');
 
 const getCards = (req, res, next) => {
   Card.find({})
-    .populate(['owner', 'likes'])
     .then((cards) => {
-      res.status(200).send(cards);
+      res.send(cards);
     })
     .catch(next);
 };
@@ -16,9 +16,14 @@ const createCard = (req, res, next) => {
   const ownerId = req.user._id;
   Card.create({ name, link, owner: ownerId })
     .then((card) => {
-      res.status(200).send(card);
+      res.send(card);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new IncorrectError('Введены неверные данные'));
+      }
+      next(err);
+    });
 };
 
 const deleteCard = (req, res, next) => {
@@ -33,7 +38,7 @@ const deleteCard = (req, res, next) => {
       }
       throw new ForbiddenError('Отказано в доступе');
     })
-    .then(() => res.status(200).send({ message: 'Карточка удалена' }))
+    .then(() => res.send({ message: 'Карточка удалена' }))
     .catch(next);
 };
 
@@ -48,7 +53,7 @@ const likeCard = (req, res, next) => {
     })
     .populate(['owner', 'likes'])
     .then((card) => {
-      res.status(200).send(card);
+      res.send(card);
     })
     .catch(next);
 };
@@ -64,7 +69,7 @@ const unLikeCard = (req, res, next) => {
     })
     .populate(['owner', 'likes'])
     .then((card) => {
-      res.status(200).send(card);
+      res.send(card);
     })
     .catch(next);
 };

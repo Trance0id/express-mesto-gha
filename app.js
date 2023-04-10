@@ -36,6 +36,9 @@ app.post('/signup', celebrate({
     avatar: Joi.string().pattern(linkPattern),
   }),
 }), createUser);
+app.get('/signout', (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Вы успешно вышли из аккаунта' });
+});
 
 app.use(auth);
 app.use('/users', usersRouter);
