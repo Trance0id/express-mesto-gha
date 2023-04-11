@@ -60,11 +60,11 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует'));
-      }
-      if (err.name === 'ValidationError') {
+      } else if (err.name === 'ValidationError') {
         next(new IncorrectError('Введены неверные данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -79,8 +79,9 @@ const modifyUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectError('Введены неверные данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -99,8 +100,9 @@ const changeAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectError('Введены неверные данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
